@@ -17,7 +17,7 @@ struct AboutView: View {
         @AppStorage("brightnessEnabled") private var brightnessEnabled: Bool = false
     #endif
     @AppStorage("volumeHUDFollowsMouse") private var volumeHUDFollowsMouse: Bool = true
-    @AppStorage("useRelativePositioning") private var useRelativePositioning: Bool = true
+    @AppStorage("hudVerticalPosition") private var hudVerticalPosition: Double = 17
 
     #if !SANDBOX
         /// State to track if an update is available
@@ -231,43 +231,38 @@ struct AboutView: View {
                 .padding(.leading, settingPadding)
                 .animation(.easeInOut(duration: 0.3), value: volumeHUDFollowsMouse)
 
-                // MARK: - Relative Positioning Toggle
+                // MARK: - Vertical Position Slider
 
                 VStack(alignment: .leading, spacing: spaceBeforeSubtitle) {
                     HStack(alignment: .center, spacing: iconColumnWidth) {
-                        Image(systemName: useRelativePositioning ? "arrow.up.and.down.text.horizontal" : "arrow.down.to.line")
-                            .foregroundStyle(useRelativePositioning ? .cyan : .gray)
+                        Image(systemName: "arrow.up.and.down.text.horizontal")
+                            .foregroundStyle(.cyan)
                             .font(.system(size: 14))
                             .frame(width: 14, alignment: .leading)
-                            .animation(.easeInOut(duration: 0.3), value: useRelativePositioning)
 
-                        Text("Relative HUD Position")
+                        Text("Vertical Position")
                             .font(.system(size: 12, weight: .medium))
                             .frame(width: minSettingColumnWidth, alignment: .leading)
 
                         Spacer()
 
-                        Toggle("", isOn: $useRelativePositioning)
-                            .toggleStyle(SwitchToggleStyle(tint: .accentColor))
-                            .scaleEffect(0.8)
-                            .onChange(of: useRelativePositioning) { oldValue, newValue in
-                                logger.debug("Relative positioning setting changed from \(oldValue) to \(newValue).")
-                            }
+                        Text("\(Int(hudVerticalPosition))%")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 30, alignment: .trailing)
                     }
 
                     HStack(spacing: iconColumnWidth) {
                         Spacer()
                             .frame(width: 14)
 
-                        Text(useRelativePositioning ? "Relative percentage from bottom" : "Absolute from bottom (Apple default)")
-                            .font(.system(size: 10))
-                            .foregroundStyle(.secondary)
-                            .opacity(0.8)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Slider(value: $hudVerticalPosition, in: 0 ... 100, step: 1)
+                            .onChange(of: hudVerticalPosition) { oldValue, newValue in
+                                logger.debug("Vertical position changed from \(oldValue) to \(newValue).")
+                            }
                     }
                 }
                 .padding(.leading, settingPadding)
-                .animation(.easeInOut(duration: 0.3), value: useRelativePositioning)
 
                 Spacer(minLength: 0)
             }
