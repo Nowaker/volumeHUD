@@ -71,6 +71,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
     // MARK: - On Finish Launching
 
     func applicationDidFinishLaunching(_: Notification) {
+        // Register default values so UserDefaults reads match @AppStorage defaults
+        UserDefaults.standard.register(defaults: [
+            "hudVerticalPosition": 17.0,
+        ])
+
         // Skip full initialization if running in SwiftUI preview or test mode
         let isDevEnvironment = isRunningInDevEnvironment()
         if isDevEnvironment { return }
