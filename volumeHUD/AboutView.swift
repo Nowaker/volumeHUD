@@ -18,6 +18,8 @@ struct AboutView: View {
     #endif
     @AppStorage("volumeHUDFollowsMouse") private var volumeHUDFollowsMouse: Bool = true
     @AppStorage("useRelativePositioning") private var useRelativePositioning: Bool = true
+    @AppStorage("hudAbsolutePosition") private var hudAbsolutePosition: Double = 140
+    @AppStorage("hudRelativePosition") private var hudRelativePosition: Double = 17
 
     #if !SANDBOX
         /// State to track if an update is available
@@ -231,7 +233,7 @@ struct AboutView: View {
                 .padding(.leading, settingPadding)
                 .animation(.easeInOut(duration: 0.3), value: volumeHUDFollowsMouse)
 
-                // MARK: - Relative Positioning Toggle
+                // MARK: - Positioning Mode Toggle
 
                 VStack(alignment: .leading, spacing: spaceBeforeSubtitle) {
                     HStack(alignment: .center, spacing: iconColumnWidth) {
@@ -255,15 +257,47 @@ struct AboutView: View {
                             }
                     }
 
-                    HStack(spacing: iconColumnWidth) {
-                        Spacer()
-                            .frame(width: 14)
+                    if useRelativePositioning {
+                        HStack(spacing: iconColumnWidth) {
+                            Spacer()
+                                .frame(width: 14)
 
-                        Text(useRelativePositioning ? "Relative percentage from bottom" : "Absolute from bottom (Apple default)")
-                            .font(.system(size: 10))
-                            .foregroundStyle(.secondary)
-                            .opacity(0.8)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                            Slider(value: $hudRelativePosition, in: 0 ... 100, step: 1)
+                                .onChange(of: hudRelativePosition) { oldValue, newValue in
+                                    logger.debug("Relative position changed from \(oldValue) to \(newValue).")
+                                }
+
+                            Text("\(Int(hudRelativePosition))%")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 36, alignment: .trailing)
+                        }
+                    } else {
+                        HStack(spacing: iconColumnWidth) {
+                            Spacer()
+                                .frame(width: 14)
+
+                            Slider(value: $hudAbsolutePosition, in: 0 ... 2000, step: 10)
+                                .onChange(of: hudAbsolutePosition) { oldValue, newValue in
+                                    logger.debug("Absolute position changed from \(oldValue) to \(newValue).")
+                                }
+
+                            Text("\(Int(hudAbsolutePosition))px")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 46, alignment: .trailing)
+                        }
+
+                        HStack(spacing: iconColumnWidth) {
+                            Spacer()
+                                .frame(width: 14)
+
+                            Text("Apple default: 140px from bottom")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary)
+                                .opacity(0.8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
                     }
                 }
                 .padding(.leading, settingPadding)
@@ -274,7 +308,7 @@ struct AboutView: View {
             .padding(.trailing, 6) // Right side window padding
         }
         .padding(32) // Overall frame padding
-        .frame(width: 540, height: 300)
+        .frame(width: 540, height: 330)
         #if !SANDBOX
             .onAppear {
                 Task {

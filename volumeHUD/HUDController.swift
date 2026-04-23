@@ -196,11 +196,30 @@ class HUDController: ObservableObject {
         // Use full screen frame to ignore Dock positioning
         let screenFrame = targetScreen.frame
 
-        // Check user preference for positioning
+        // Calculate vertical position based on user preference (absolute px or relative %)
         let useRelativePositioning = UserDefaults.standard.bool(forKey: "useRelativePositioning")
-        let yPosition = useRelativePositioning
-            ? screenFrame.origin.y + screenFrame.height * 0.17 // 17% from bottom
-            : screenFrame.origin.y + 140 // 140px from bottom
+        let yPosition: CGFloat
+        if useRelativePositioning {
+            // Relative: percentage of screen height, centered on the HUD
+            let percent = UserDefaults.standard.double(forKey: "hudRelativePosition") // 0–100
+            let fraction = CGFloat(percent / 100.0)
+            let centerY = screenFrame.origin.y + fraction * screenFrame.height
+            let rawY = centerY - windowSize.height / 2.0
+            yPosition = max(
+                screenFrame.origin.y,
+                min(rawY, screenFrame.origin.y + screenFrame.height - windowSize.height)
+            )
+        } else {
+            // Absolute: fixed pixel offset from the bottom of the screen
+            let pixels = UserDefaults.standard.double(forKey: "hudAbsolutePosition") // px
+            yPosition = max(
+                screenFrame.origin.y,
+                min(
+                    screenFrame.origin.y + CGFloat(pixels),
+                    screenFrame.origin.y + screenFrame.height - windowSize.height
+                )
+            )
+        }
 
         let newWindowRect = NSRect(
             x: screenFrame.origin.x + (screenFrame.width - windowSize.width) / 2,
