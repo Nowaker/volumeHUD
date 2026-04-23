@@ -196,17 +196,30 @@ class HUDController: ObservableObject {
         // Use full screen frame to ignore Dock positioning
         let screenFrame = targetScreen.frame
 
-        // Calculate vertical position from user preference (0–100%)
-        // The percentage represents where the center of the HUD should be on screen.
-        // At 0% the HUD sits flush with the bottom; at 100% flush with the top.
-        let verticalPercent = UserDefaults.standard.double(forKey: "hudVerticalPosition") // 0–100
-        let fraction = CGFloat(verticalPercent / 100.0)
-        let centerY = screenFrame.origin.y + fraction * screenFrame.height
-        let rawY = centerY - windowSize.height / 2.0
-        let yPosition = max(
-            screenFrame.origin.y,
-            min(rawY, screenFrame.origin.y + screenFrame.height - windowSize.height)
-        )
+        // Calculate vertical position based on user preference (absolute px or relative %)
+        let useRelativePositioning = UserDefaults.standard.bool(forKey: "useRelativePositioning")
+        let yPosition: CGFloat
+        if useRelativePositioning {
+            // Relative: percentage of screen height, centered on the HUD
+            let percent = UserDefaults.standard.double(forKey: "hudRelativePosition") // 0–100
+            let fraction = CGFloat(percent / 100.0)
+            let centerY = screenFrame.origin.y + fraction * screenFrame.height
+            let rawY = centerY - windowSize.height / 2.0
+            yPosition = max(
+                screenFrame.origin.y,
+                min(rawY, screenFrame.origin.y + screenFrame.height - windowSize.height)
+            )
+        } else {
+            // Absolute: fixed pixel offset from the bottom of the screen
+            let pixels = UserDefaults.standard.double(forKey: "hudAbsolutePosition") // px
+            yPosition = max(
+                screenFrame.origin.y,
+                min(
+                    screenFrame.origin.y + CGFloat(pixels),
+                    screenFrame.origin.y + screenFrame.height - windowSize.height
+                )
+            )
+        }
 
         let newWindowRect = NSRect(
             x: screenFrame.origin.x + (screenFrame.width - windowSize.width) / 2,

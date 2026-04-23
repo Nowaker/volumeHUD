@@ -73,7 +73,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
     func applicationDidFinishLaunching(_: Notification) {
         // Register default values so UserDefaults reads match @AppStorage defaults
         UserDefaults.standard.register(defaults: [
-            "hudVerticalPosition": 17.0,
+            "useRelativePositioning": true,
+            "hudAbsolutePosition": 140.0,
+            "hudRelativePosition": 17.0,
         ])
 
         // Skip full initialization if running in SwiftUI preview or test mode
@@ -393,7 +395,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
 
         // Use NSPanel to remain in accessory mode
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 600, height: 300),
+            contentRect: NSRect(x: 0, y: 0, width: 600, height: 330),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false,
@@ -409,7 +411,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
         if let screen = NSScreen.main {
             let screenFrame = screen.visibleFrame
             let windowWidth: CGFloat = 600
-            let windowHeight: CGFloat = 300
+            let windowHeight: CGFloat = 330
 
             let x = screenFrame.origin.x + (screenFrame.width - windowWidth) / 2
             let y = screenFrame.origin.y + screenFrame.height * 0.66 - windowHeight / 2
